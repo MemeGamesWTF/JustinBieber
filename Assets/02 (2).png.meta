@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: bd72d501e968e7f42ae6dd32df075496
+guid: a97947813e96ffa4784e3ff698066aed
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 4076257566749871635
-    second: justin beber 02_0
+      213: 3998120638648347872
+    second: 02 (2)_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,10 +126,10 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: justin beber 02_0
+      name: 02 (2)_0
       rect:
         serializedVersion: 2
-        x: 445
+        x: 71
         y: 42
         width: 477
         height: 968
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 31ecf17f8a6c19830800000000000000
-      internalID: 4076257566749871635
+      spriteID: 0eceac3b98d2c7730800000000000000
+      internalID: 3998120638648347872
       vertices: []
       indices: 
       edges: []
@@ -160,8 +160,7 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable:
-      justin beber 02_0: 4076257566749871635
+    nameFileIdTable: {}
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

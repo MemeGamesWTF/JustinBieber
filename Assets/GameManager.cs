@@ -30,7 +30,8 @@ public class GameManager : MonoBehaviour
     private float tapDecayDelay = 0f; // Time before value starts decreasing
     public float decayRate = 0.3f;
 
-    public GameObject[] people;
+   // public GameObject[] people;
+    //public GameObject[] ;
      public Animator Playeranimators;
 
     [DllImport("__Internal")]
@@ -54,7 +55,7 @@ public class GameManager : MonoBehaviour
     {
         InfoScreen.SetActive(true);
         if (progressBar != null)
-            progressBar.value = 0;
+            progressBar.value = 5;
     }
 
     void Update()
@@ -69,16 +70,30 @@ public class GameManager : MonoBehaviour
             if (timer <= 0)
             {
                 timer = 0;
+                Debug.Log("gameover");
+
                 GameOVer(); // End the game when the timer runs out
             }
 
             UpdateTimerUI();
         }
 
-        if (Input.GetMouseButtonDown(0) || Input.touchCount > 0)
+
+        Playeranimators.SetFloat("Val", progressBar.value / progressBar.maxValue);
+        if (Input.GetMouseButtonDown(0))
         {
-            IncreaseSliderValue();
+            IncreaseSliderValue(0.3f);
         }
+
+        if (Input.touchCount > 0)
+        {
+            Touch touch = Input.GetTouch(0);
+            if (touch.phase == TouchPhase.Began) // Detects only the initial tap, ignoring holds
+            {
+                IncreaseSliderValue(0.1f);
+            }
+        }
+
 
         if (Time.time - lastTapTime > tapDecayDelay)
         {
@@ -88,12 +103,12 @@ public class GameManager : MonoBehaviour
 
     }
 
-    private void IncreaseSliderValue()
+    private void IncreaseSliderValue(float increment)
     {
         if (progressBar != null)
         {
             float previousValue = progressBar.value;
-            progressBar.value += 0.1f; // Increase slider value
+            progressBar.value += increment; // Increase slider value
             progressBar.value = Mathf.Clamp(progressBar.value, 0, progressBar.maxValue);
             AddScore();
 
@@ -104,60 +119,75 @@ public class GameManager : MonoBehaviour
 
             if (previousValue < quarterWay && progressBar.value >= quarterWay)
             {
-                Playeranimators.SetBool("isStart", true);
-                //activePeople();
-                people[0].gameObject.SetActive(false);
-                people[1].gameObject.SetActive(true);
-                people[2].gameObject.SetActive(true);
-                people[3].gameObject.SetActive(true);
+
+                
 
                 //Debug.Log("Slider reached 25% (Quarter Way)");
             }
             if (previousValue < halfway && progressBar.value >= halfway)
             {
-                Playeranimators.SetBool("isStart", false);
-                Playeranimators.SetBool("isMiddle", true);
-                people[0].gameObject.SetActive(false);
-                people[1].gameObject.SetActive(false);
-                people[2].gameObject.SetActive(true);
-                people[3].gameObject.SetActive(true);
-
+              
               //  Debug.Log("Slider reached 50% (Halfway)");
             }
             if (previousValue < threeQuarterWay && progressBar.value >= threeQuarterWay)
             {
-                Playeranimators.SetBool("isMiddle", false);
-                Playeranimators.SetBool("isEnd", true);
-                people[0].gameObject.SetActive(false);
-                people[1].gameObject.SetActive(false);
-                people[2].gameObject.SetActive(false);
-                people[3].gameObject.SetActive(false);
               //  Debug.Log("Slider reached 75% (Three-Quarter Way)");
             }
 
-            // Check if the slider is full
             if (progressBar.value >= progressBar.maxValue)
             {
                 GameWin();
             }
+
         }
         lastTapTime = Time.time;
     }
     private void DecreaseSliderValue()
     {
+        float previousValue = progressBar.value;
         if (progressBar != null && progressBar.value > 0)
         {
             progressBar.value -= decayRate * Time.deltaTime; // Decrease over time
             progressBar.value = Mathf.Clamp(progressBar.value, 0, progressBar.maxValue);
-           // ReduceScore();
+
+            float quarterWay = progressBar.maxValue * 0.25f;
+            float halfway = progressBar.maxValue * 0.5f;
+            float threeQuarterWay = progressBar.maxValue * 0.75f;
+
+            if (previousValue >= threeQuarterWay && progressBar.value < threeQuarterWay)
+            {
+               // Playeranimators.SetBool("isEnd", false);
+              //
+
+                // Debug.Log("Slider dropped below 75%");
+            }
+            if (previousValue >= halfway && progressBar.value < halfway)
+            {
+               // Playeranimators.SetBool("isMiddle", false);
+              //  Playeranimators.SetBool("isStart", true);
+               
+
+                // Debug.Log("Slider dropped below 50%");
+            }
+            if (previousValue >= quarterWay && progressBar.value < quarterWay)
+            {
+               // Playeranimators.SetBool("isStart", false);
+                // Reset people state or apply other logic
+                activePeople();
+
+                // Debug.Log("Slider dropped below 25%");
+            }
+
+
+            // ReduceScore();
         }
     }
     public void activePeople()
     {
-        people[0].gameObject.SetActive(true);
-        people[1].gameObject.SetActive(true);
-        people[2].gameObject.SetActive(true);
-        people[3].gameObject.SetActive(true);
+       // people[0].gameObject.SetActive(true);
+       // people[1].gameObject.SetActive(true);
+       // people[2].gameObject.SetActive(true);
+       // people[3].gameObject.SetActive(true);
     }
 
     private void UpdateTimerUI()
@@ -170,14 +200,18 @@ public class GameManager : MonoBehaviour
     {
         GameState = false;
         GameWinScreen.SetActive(true);
-        SendScore((int)Score.score, GameID);
+        Debug.Log(currentScore);
+        SendScore((int)currentScore, GameID);
+       
     }
 
     public void GameOVer()
     {
         GameState = false;
+        Debug.Log(currentScore);
         GameOverScreen.SetActive(true);
-        SendScore((int)Score.score, GameID);
+        SendScore((int)currentScore, GameID);
+        
     }
     public void AddScore()
     {
@@ -194,22 +228,11 @@ public class GameManager : MonoBehaviour
             ScoreText.text = "0";
         }
     }
-    private void ReduceScore()
-    {
-        if (int.TryParse(ScoreText.text, out currentScore))
-        {
-            currentScore = Mathf.Max(0, currentScore - 5); // Reduce score but prevent negative values
-            ScoreText.text = currentScore.ToString();
-        }
-        else
-        {
-            ScoreText.text = "0";
-        }
-    }
+   
 
     public void GameResetScreen()
     {
-        Playeranimators.SetBool("isEnd", false);
+       
         timer = 30f;
         isTimerRunning = true;
         ScoreText.text = "0";
@@ -217,12 +240,13 @@ public class GameManager : MonoBehaviour
         currentScore = 0;
         activePeople();
         UpdateTimerUI();
+        Playeranimators.SetBool("isEnd", false);
         InfoScreen.SetActive(false);
         GameOverScreen.SetActive(false);
         GameWinScreen.SetActive(false);
         GameState = true;
         if (progressBar != null)
-            progressBar.value = 0;
+            progressBar.value = 3;
 
         Player.Reset();
     }
