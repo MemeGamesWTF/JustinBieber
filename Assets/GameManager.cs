@@ -21,7 +21,7 @@ public class GameManager : MonoBehaviour
     private ScoreObj Score;
 
     public Text TimerText;  // Assign this in the Unity Inspector
-    private float timer = 30f; // Timer starts at 60 seconds
+    private float timer = 10f; // Timer starts at 60 seconds
     private bool isTimerRunning = false;
 
     public Slider progressBar;
@@ -30,10 +30,11 @@ public class GameManager : MonoBehaviour
     private float tapDecayDelay = 0f; // Time before value starts decreasing
     public float decayRate = 0.3f;
 
-   // public GameObject[] people;
+    public GameObject[] peopleSad;
+    public GameObject[] peopleHappy;
     //public GameObject[] ;
      public Animator Playeranimators;
-
+    public AudioSource[] PlayerAudioSource;
     [DllImport("__Internal")]
     private static extern void SendScore(int score, int game);
 
@@ -42,7 +43,7 @@ public class GameManager : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Debug.LogWarning("Another instance of GameManager already exists. Destroying this instance.");
+           // Debug.LogWarning("Another instance of GameManager already exists. Destroying this instance.");
             Destroy(gameObject);
             return;
         }
@@ -70,9 +71,10 @@ public class GameManager : MonoBehaviour
             if (timer <= 0)
             {
                 timer = 0;
-                Debug.Log("gameover");
-
+                // Debug.Log("gameover");
+                PlayerAudioSource[0].Play();
                 GameOVer(); // End the game when the timer runs out
+               
             }
 
             UpdateTimerUI();
@@ -82,7 +84,8 @@ public class GameManager : MonoBehaviour
         Playeranimators.SetFloat("Val", progressBar.value / progressBar.maxValue);
         if (Input.GetMouseButtonDown(0))
         {
-            IncreaseSliderValue(0.3f);
+            IncreaseSliderValue(0.4f);
+            PlayerAudioSource[2].Play();
         }
 
         if (Input.touchCount > 0)
@@ -91,6 +94,7 @@ public class GameManager : MonoBehaviour
             if (touch.phase == TouchPhase.Began) // Detects only the initial tap, ignoring holds
             {
                 IncreaseSliderValue(0.1f);
+                PlayerAudioSource[2].Play();
             }
         }
 
@@ -119,24 +123,26 @@ public class GameManager : MonoBehaviour
 
             if (previousValue < quarterWay && progressBar.value >= quarterWay)
             {
-
-                
-
+              
                 //Debug.Log("Slider reached 25% (Quarter Way)");
             }
             if (previousValue < halfway && progressBar.value >= halfway)
             {
-              
-              //  Debug.Log("Slider reached 50% (Halfway)");
+               
+               
+                //  Debug.Log("Slider reached 50% (Halfway)");
             }
             if (previousValue < threeQuarterWay && progressBar.value >= threeQuarterWay)
             {
-              //  Debug.Log("Slider reached 75% (Three-Quarter Way)");
+                activePeople();
+                //  Debug.Log("Slider reached 75% (Three-Quarter Way)");
             }
 
             if (progressBar.value >= progressBar.maxValue)
             {
+                PlayerAudioSource[1].Play();
                 GameWin();
+                
             }
 
         }
@@ -156,61 +162,83 @@ public class GameManager : MonoBehaviour
 
             if (previousValue >= threeQuarterWay && progressBar.value < threeQuarterWay)
             {
-               // Playeranimators.SetBool("isEnd", false);
-              //
 
+                deactivePeople();
                 // Debug.Log("Slider dropped below 75%");
             }
             if (previousValue >= halfway && progressBar.value < halfway)
             {
-               // Playeranimators.SetBool("isMiddle", false);
-              //  Playeranimators.SetBool("isStart", true);
-               
+          
+
+              
 
                 // Debug.Log("Slider dropped below 50%");
             }
             if (previousValue >= quarterWay && progressBar.value < quarterWay)
             {
-               // Playeranimators.SetBool("isStart", false);
-                // Reset people state or apply other logic
-                activePeople();
+               
 
                 // Debug.Log("Slider dropped below 25%");
             }
 
 
-            // ReduceScore();
+            
         }
     }
     public void activePeople()
     {
-       // people[0].gameObject.SetActive(true);
-       // people[1].gameObject.SetActive(true);
-       // people[2].gameObject.SetActive(true);
-       // people[3].gameObject.SetActive(true);
+        peopleSad[0].gameObject.SetActive(false);
+        peopleSad[1].gameObject.SetActive(false);
+        peopleSad[2].gameObject.SetActive(false);
+        peopleSad[3].gameObject.SetActive(false);
+        peopleSad[4].gameObject.SetActive(false);
+        peopleSad[5].gameObject.SetActive(false);
+
+        peopleHappy[0].gameObject.SetActive(true);
+        peopleHappy[1].gameObject.SetActive(true);
+        peopleHappy[2].gameObject.SetActive(true);
+        peopleHappy[3].gameObject.SetActive(true);
+        peopleHappy[4].gameObject.SetActive(true);
+        peopleHappy[5].gameObject.SetActive(true);
+    }
+    public void deactivePeople()
+    {
+        peopleSad[0].gameObject.SetActive(true);
+        peopleSad[1].gameObject.SetActive(true);
+        peopleSad[2].gameObject.SetActive(true);
+        peopleSad[3].gameObject.SetActive(true);
+        peopleSad[4].gameObject.SetActive(true);
+        peopleSad[5].gameObject.SetActive(true);
+
+        peopleHappy[0].gameObject.SetActive(false);
+        peopleHappy[1].gameObject.SetActive(false);
+        peopleHappy[2].gameObject.SetActive(false);
+        peopleHappy[3].gameObject.SetActive(false);
+        peopleHappy[4].gameObject.SetActive(false);
+        peopleHappy[5].gameObject.SetActive(false);
     }
 
     private void UpdateTimerUI()
     {
-        int minutes = Mathf.FloorToInt(timer / 30);
-        int seconds = Mathf.FloorToInt(timer % 30);
+        int minutes = Mathf.FloorToInt(timer / 10);
+        int seconds = Mathf.FloorToInt(timer % 10);
         TimerText.text = $"{minutes:00}:{seconds:00}";
     }
     public void GameWin()
     {
         GameState = false;
         GameWinScreen.SetActive(true);
-        Debug.Log(currentScore);
-        SendScore((int)currentScore, GameID);
+       // Debug.Log(currentScore);
+        SendScore(currentScore, 69);
        
     }
 
     public void GameOVer()
     {
         GameState = false;
-        Debug.Log(currentScore);
+        //Debug.Log(currentScore);
         GameOverScreen.SetActive(true);
-        SendScore((int)currentScore, GameID);
+        SendScore(currentScore, 69);
         
     }
     public void AddScore()
@@ -232,13 +260,13 @@ public class GameManager : MonoBehaviour
 
     public void GameResetScreen()
     {
-       
-        timer = 30f;
+      
+        timer = 10f;
         isTimerRunning = true;
         ScoreText.text = "0";
         Score.score = 0;
         currentScore = 0;
-        activePeople();
+        deactivePeople();
         UpdateTimerUI();
         Playeranimators.SetBool("isEnd", false);
         InfoScreen.SetActive(false);
